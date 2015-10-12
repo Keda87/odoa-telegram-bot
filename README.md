@@ -1,5 +1,6 @@
 # ODOA Telegram Bot
 Simple example telegram bot using [ODOA library](https://github.com/Keda87/python-quran-odoa).
+This bot scheduled to send random surah & translation every day at 6:00 AM. Feel free to fork and modify this bot with your needs.
 
 # Prerequisite:
 - Python 2.7.*
