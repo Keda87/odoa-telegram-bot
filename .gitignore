@@ -1,0 +1,6 @@
+.idea/
+*.pyc
+*.dat
+*.bak
+*.dir
+*.rdb
