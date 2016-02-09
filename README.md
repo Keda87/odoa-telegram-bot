@@ -14,4 +14,4 @@ Feel free to fork and modify this bot with your needs.
 - run `pip install -r requirements.txt`
 
 # Run:
-- `python bot.py`
+`$ python bot.py`
