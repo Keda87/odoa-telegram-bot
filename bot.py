@@ -1,17 +1,21 @@
+from ConfigParser import SafeConfigParser
 from telegram import Updater
 from tasks import surah_sender, subscribe, unsubscribe, random, error
 
+config = SafeConfigParser()
+config.read('config.ini')
 
 if __name__ == '__main__':
-    updater = Updater(token='85912576:AAHP8ru0nT6mtnk5tco7mnVb9cjVCcXyDZw')
+    updater = Updater(token=config.get('main', 'token'))
 
     # Register bot command.
     updater.dispatcher.addTelegramCommandHandler('subscribe', subscribe)
     updater.dispatcher.addTelegramCommandHandler('unsubscribe', unsubscribe)
     updater.dispatcher.addTelegramCommandHandler('random', random)
 
-    # Register job scheduler.
-    # updater.job_queue.put(surah_sender, 3, repeat=True)
+    # Register job scheduler in every 12 hours.
+    hours12 = 60 * 60 * 60 * 12
+    updater.job_queue.put(surah_sender, hours12, repeat=True)
 
     # Add error handler.
     updater.dispatcher.addErrorHandler(error)
