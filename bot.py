@@ -1,6 +1,6 @@
 from ConfigParser import RawConfigParser
 from telegram import Updater
-from tasks import surah_sender, subscribe, unsubscribe, random, error
+from tasks import surah_sender, subscribe, unsubscribe, random, error, start
 
 config = RawConfigParser()
 config.read('config.ini')
@@ -9,6 +9,7 @@ if __name__ == '__main__':
     updater = Updater(token=config.get('main', 'token'))
 
     # Register bot command.
+    updater.dispatcher.addTelegramCommandHandler('start', start)
     updater.dispatcher.addTelegramCommandHandler('subscribe', subscribe)
     updater.dispatcher.addTelegramCommandHandler('unsubscribe', unsubscribe)
     updater.dispatcher.addTelegramCommandHandler('random', random)

@@ -9,6 +9,7 @@ logging.basicConfig(
     )
 logger = logging.getLogger(__name__)
 odoa = ODOA()
+OWNER_ID = None  # Set your telegram ID if you want this bot send you error log.
 
 
 def get_surah():
@@ -60,6 +61,13 @@ def random(bot, update):
     bot.sendMessage(chat_id=chat_id, text=get_surah())
 
 
+def start(bot, update):
+    chat_id = update.message.chat_id
+    message = ('Thanks for using @NgajiBot, '
+               'any question? just ask my creator @adiyatmubarak')
+    bot.sendMessage(chat_id=chat_id, text=message)
+
+
 def surah_sender(bot):
     subs = Subscriber.select(Subscriber.telegram_id).execute()
     for s in subs.all():
@@ -67,4 +75,8 @@ def surah_sender(bot):
 
 
 def error(bot, update, error):
-    logger.warn('Update %s caused error %s' % (update, error))
+    message = 'Update %s caused error %s' % (update, error)
+    logger.warn(message)
+    # Send error log directly to the bot creator if the owner ID filled.
+    if OWNER_ID is not None:
+        bot.sendMessage(chat_id=OWNER_ID, text=message)
