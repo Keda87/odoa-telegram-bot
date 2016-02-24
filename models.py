@@ -1,5 +1,5 @@
 import pymysql
-from ConfigParser import SafeConfigParser
+from ConfigParser import RawConfigParser
 from skylark import Database
 from skylark import Model, Field
 
@@ -11,7 +11,7 @@ class Subscriber(Model):
     last_name = Field()
     message = Field()
 
-config = SafeConfigParser()
+config = RawConfigParser()
 config.read('config.ini')
 
 db_name = config.get('main', 'db_name')

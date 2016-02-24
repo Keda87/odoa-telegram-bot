@@ -1,8 +1,8 @@
-from ConfigParser import SafeConfigParser
+from ConfigParser import RawConfigParser
 from telegram import Updater
 from tasks import surah_sender, subscribe, unsubscribe, random, error
 
-config = SafeConfigParser()
+config = RawConfigParser()
 config.read('config.ini')
 
 if __name__ == '__main__':
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     updater.dispatcher.addTelegramCommandHandler('random', random)
 
     # Register job scheduler in every 12 hours.
-    hours12 = 60 * 60 * 60 * 12
+    hours12 = 60 * 60 * 12
     updater.job_queue.put(surah_sender, hours12, repeat=True)
 
     # Add error handler.
