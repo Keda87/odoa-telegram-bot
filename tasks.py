@@ -14,8 +14,9 @@ OWNER_ID = None  # Set your telegram ID if you want this bot send you error log.
 
 def get_surah():
     surah = odoa.get_random_surah()
-    message = '{ayat}\n{translate}'.format(ayat=surah.get('ayat'),
-                                           translate=surah.get('translate'))
+    message = '{desc}\n{ayat}\n{translate}'.format(desc=surah.get('description'),
+                                                   ayat=surah.get('ayat'),
+                                                   translate=surah.get('translate'))
     return message
 
 
