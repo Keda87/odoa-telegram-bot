@@ -72,7 +72,22 @@ def start(bot, update):
 def surah_sender(bot):
     subs = Subscriber.select(Subscriber.telegram_id).execute()
     for s in subs.all():
-        bot.sendMessage(chat_id=s['telegram_id'], text=get_surah())
+        try:
+            bot.sendMessage(chat_id=s['telegram_id'], text=get_surah())
+        except Exception:
+            print 'An error sending to {id}'.format(id=s['telegram_id'])
+        else:
+            print 'Success send surah to {id}'.format(id=s['telegram_id'])
+
+def manual_send_surah():
+    import telegram
+    from ConfigParser import RawConfigParser
+
+    config = RawConfigParser()
+    config.read('config.ini')
+
+    bot = telegram.Bot(token=config.get('main', 'token'))
+    surah_sender(bot)    
 
 
 def error(bot, update, error):
