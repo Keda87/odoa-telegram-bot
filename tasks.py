@@ -12,10 +12,6 @@ odoa = ODOA()
 OWNER_ID = None  # Set your telegram ID if you want this bot send you error log.
 
 
-class ODOABotException(Exception):
-    pass
-
-
 def get_surah():
     surah = odoa.get_random_surah()
     message = '{desc}\n\n{ayat}\n{translate}'.format(
@@ -87,7 +83,7 @@ def surah_sender(bot):
     for s in subs.all():
         try:
             bot.sendMessage(chat_id=s['telegram_id'], text=get_surah())
-        except ODOABotException:
+        except Exception:
             logger.info('An error sending to {id}'.format(id=s['telegram_id']))
         else:
             logger.info('Success send surah to {id}'.format(id=s['telegram_id']))
@@ -109,7 +105,7 @@ def broadcast(message=None):
         for s in subs.all():
             try:
                 bot.sendMessage(chat_id=s['telegram_id'], text=message)
-            except ODOABotException:
+            except Exception:
                 logger.info(
                     'An error sending to {id}'.format(id=s['telegram_id']))
             else:
