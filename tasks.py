@@ -4,19 +4,25 @@ from models import Subscriber
 
 
 logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 odoa = ODOA()
 OWNER_ID = None  # Set your telegram ID if you want this bot send you error log.
 
 
+class ODOABotException(Exception):
+    pass
+
+
 def get_surah():
     surah = odoa.get_random_surah()
-    message = '{desc}\n\n{ayat}\n{translate}'.format(desc=surah.get('description'),
-                                                   ayat=surah.get('ayat'),
-                                                   translate=surah.get('translate'))
+    message = '{desc}\n\n{ayat}\n{translate}'.format(
+        desc=surah.desc,
+        ayat=surah.ayah,
+        translate=surah.translate
+    )
     return message
 
 
@@ -34,12 +40,19 @@ def subscribe(bot, update):
         }
         user = Subscriber(**meta)
         user.save()
-        message = 'Hi {name}, thank you for subscribing ODOA updates.'.format(name=username)
-        logger.info('User subscribed: {chat_id}'.format(chat_id=update.message.chat_id))
+        message = 'Hi {name}, thank you for subscribing ODOA updates.'.format(
+            name=username
+        )
+        logger.info('User subscribed: {chat_id}'.format(
+            chat_id=update.message.chat_id)
+        )
     else:
-        message = 'Hi {name}, your telegram ID already registered.'.format(name=username)
-        logger.info('User {username} already subscribed.'.format(username=username))
-
+        message = 'Hi {name}, your telegram ID already registered.'.format(
+            name=username
+        )
+        logger.info('User {username} already subscribed.'.format(
+            username=username)
+        )
     bot.sendMessage(chat_id=telegram_id, text=message)
 
 
@@ -74,20 +87,39 @@ def surah_sender(bot):
     for s in subs.all():
         try:
             bot.sendMessage(chat_id=s['telegram_id'], text=get_surah())
-        except Exception:
+        except ODOABotException:
             logger.info('An error sending to {id}'.format(id=s['telegram_id']))
         else:
             logger.info('Success send surah to {id}'.format(id=s['telegram_id']))
 
 
-def manual_send_surah():
+def get_bot_config():
     import telegram
     from ConfigParser import RawConfigParser
-
     config = RawConfigParser()
     config.read('config.ini')
-
     bot = telegram.Bot(token=config.get('main', 'token'))
+    return bot
+
+
+def broadcast(message=None):
+    if message:
+        bot = get_bot_config()
+        subs = Subscriber.select(Subscriber.telegram_id).execute()
+        for s in subs.all():
+            try:
+                bot.sendMessage(chat_id=s['telegram_id'], text=message)
+            except ODOABotException:
+                logger.info(
+                    'An error sending to {id}'.format(id=s['telegram_id']))
+            else:
+                logger.info(
+                    'Success send broadcast to {id}'.format(id=s['telegram_id'])
+                )
+
+
+def manual_send_surah():
+    bot = get_bot_config()
     surah_sender(bot)    
 
 
