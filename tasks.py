@@ -78,7 +78,7 @@ def start(bot, update):
     bot.sendMessage(chat_id=chat_id, text=message)
 
 
-def surah_sender(bot):
+def surah_sender(bot=None):
     subs = Subscriber.select(Subscriber.telegram_id).execute()
     for s in subs.all():
         try:
