@@ -83,9 +83,9 @@ def surah_sender(bot=None):
         try:
             bot.sendMessage(chat_id=s[0], text=get_surah())
         except Exception:
-            logger.info('An error sending to {id}'.format(id=s['telegram_id']))
+            logger.info('An error sending to {id}'.format(id=s[0]))
         else:
-            logger.info('Success send surah to {id}'.format(id=s['telegram_id']))
+            logger.info('Success send surah to {id}'.format(id=s[0]))
 
 
 def get_bot_config():
@@ -104,12 +104,9 @@ def broadcast(message=None):
             try:
                 bot.sendMessage(chat_id=s[0], text=message)
             except Exception:
-                logger.info(
-                    'An error sending to {id}'.format(id=s['telegram_id']))
+                logger.info('An error sending to {id}'.format(id=s[0]))
             else:
-                logger.info(
-                    'Success send broadcast to {id}'.format(id=s['telegram_id'])
-                )
+                logger.info('Success send broadcast to {id}'.format(id=s[0]))
 
 
 def manual_send_surah():
