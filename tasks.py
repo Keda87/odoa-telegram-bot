@@ -1,7 +1,6 @@
 import logging
 from odoa import ODOA
-from models import Subscriber
-
+from unqlite import UnQLite
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -10,6 +9,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 odoa = ODOA()
 OWNER_ID = None  # Set your telegram ID if you want this bot send you error log.
+unqlite = UnQLite('odoa')
 
 
 def get_surah():
@@ -25,17 +25,13 @@ def get_surah():
 def subscribe(bot, update):
     telegram_id = update.message.from_user.id
     username = update.message.from_user.username
-    instance = Subscriber.findone(telegram_id=telegram_id)
-    if instance not in Subscriber:
-        meta = {
-            'telegram_id': telegram_id,
+    if telegram_id not in unqlite:
+        unqlite[telegram_id] = {
             'username': username,
             'first_name': update.message.from_user.first_name,
             'last_name': update.message.from_user.last_name,
             'message': update.message.text
         }
-        user = Subscriber(**meta)
-        user.save()
         message = 'Hi {name}, thank you for subscribing ODOA updates.'.format(
             name=username
         )
@@ -55,14 +51,18 @@ def subscribe(bot, update):
 def unsubscribe(bot, update):
     telegram_id = update.message.from_user.id
     username = update.message.from_user.username
-    instance = Subscriber.findone(telegram_id=telegram_id)
-    if instance in Subscriber:
-        instance.destroy()
-        message = 'Hi {name}, your account removed from ODOA subscription.'.format(name=username)
-    else:
-        message = 'Hi, {name}, your account not registered yet.'.format(name=username)
-        logger.info('User unsubscribed: {chat_id}'.format(chat_id=update.message.chat_id))
-
+    try:
+        del unqlite[telegram_id]
+        message = 'Hi {name}, your account removed from ODOA subscription.'.format(
+            name=username
+        )
+    except:
+        message = 'Hi, {name}, your account not registered yet.'.format(
+            name=username
+        )
+        logger.info('User unsubscribed: {chat_id}'.format(
+            chat_id=update.message.chat_id)
+        )
     bot.sendMessage(chat_id=telegram_id, text=message)
 
 
@@ -79,10 +79,9 @@ def start(bot, update):
 
 
 def surah_sender(bot=None):
-    subs = Subscriber.select(Subscriber.telegram_id).execute()
-    for s in subs.all():
+    for s in unqlite:
         try:
-            bot.sendMessage(chat_id=s['telegram_id'], text=get_surah())
+            bot.sendMessage(chat_id=s[0], text=get_surah())
         except Exception:
             logger.info('An error sending to {id}'.format(id=s['telegram_id']))
         else:
@@ -101,10 +100,9 @@ def get_bot_config():
 def broadcast(message=None):
     if message:
         bot = get_bot_config()
-        subs = Subscriber.select(Subscriber.telegram_id).execute()
-        for s in subs.all():
+        for s in unqlite:
             try:
-                bot.sendMessage(chat_id=s['telegram_id'], text=message)
+                bot.sendMessage(chat_id=s[0], text=message)
             except Exception:
                 logger.info(
                     'An error sending to {id}'.format(id=s['telegram_id']))
