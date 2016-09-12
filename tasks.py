@@ -32,7 +32,7 @@ def subscribe(bot, update):
             'last_name': update.message.from_user.last_name,
             'message': update.message.text
         }
-        message = 'Hi {name}, thank you for subscribing ODOA updates.'.format(
+        message = 'Hi {name}, thank you for subscribing SaHaDa updates.'.format(
             name=username
         )
         logger.info('User subscribed: {chat_id}'.format(
@@ -53,7 +53,7 @@ def unsubscribe(bot, update):
     username = update.message.from_user.username
     try:
         del unqlite[telegram_id]
-        message = 'Hi {name}, your account removed from ODOA subscription.'.format(
+        message = 'Hi {name}, your account removed from SaHaDa subscription.'.format(
             name=username
         )
     except:
@@ -73,8 +73,8 @@ def random(bot, update):
 
 def start(bot, update):
     chat_id = update.message.chat_id
-    message = ('Thanks for using @NgajiBot, '
-               'any question? just ask my creator @adiyatmubarak')
+    message = ('Welcome to SaHaDa (Satu Hari Dua Ayat) and thanks for using '
+               '@NgajiBot, any question? just ask my creator @adiyatmubarak')
     bot.sendMessage(chat_id=chat_id, text=message)
 
 
