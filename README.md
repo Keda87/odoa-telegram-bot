@@ -6,12 +6,12 @@ Currently you can try this bot at [@NgajiBot](https://telegram.me/ngajibot).
 Feel free to fork and modify this bot with your needs.
 
 # Prerequisite:
-- Python 2.7.*
+- Python 3.6.*
 
 # Installation:
 - Clone this project [https://github.com/Keda87/odoa-telegram-bot/](https://github.com/Keda87/odoa-telegram-bot/)
-- Edit `config.ini` with your own configuration.
-- run `pip install -r requirements.txt`
+- Create `.env` and put your telegram token to `TELEGRAM_TOKEN=`.
+- run `$ pipenv install`
 
 # Run:
 `$ python bot.py`

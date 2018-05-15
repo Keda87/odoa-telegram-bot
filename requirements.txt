@@ -1,4 +1,0 @@
-python-telegram-bot==3.2.0
-python-quran-odoa==1.6
-Cython==0.24.1
-unqlite==0.6.0

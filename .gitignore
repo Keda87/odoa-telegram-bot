@@ -5,4 +5,5 @@
 *.dir
 *.rdb
 *.sh
+.env
 backups/*
