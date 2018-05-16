@@ -6,4 +6,5 @@
 *.rdb
 *.sh
 .env
+*.sqlite
 backups/*

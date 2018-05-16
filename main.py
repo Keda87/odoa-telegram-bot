@@ -3,10 +3,9 @@ import os
 
 from dotenv import load_dotenv, find_dotenv
 from odoa import ODOA
-from redis import Redis
-from rq import Queue
 from telegram.ext import Updater, CommandHandler
 
+from dbutils import DBUtils
 
 odoa = ODOA()
 load_dotenv(find_dotenv())
@@ -15,7 +14,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
-q = Queue(connection=Redis())
+db = DBUtils(db_name=os.getenv('DB'))
 
 
 def get_surah():
@@ -28,7 +27,6 @@ def get_surah():
 
 
 def start_handler(bot, update):
-    telegram_id = update.message.from_user.id
     username = update.message.from_user.username
     message = (f'Hi {username},\n\n'
                f'SaHaDa akan mengirimkan 2 surat beserta terjemahan setiap '
@@ -36,7 +34,7 @@ def start_handler(bot, update):
                f'Ketik /subscribe untuk berlangganan dan /unsubscribe '
                f'untuk berhenti berlangganan.\n\n'
                f'Ketik /help untuk bantuan.')
-    bot.sendMessage(chat_id=telegram_id, text=message)
+    update.message.reply_text(message)
 
 
 def help_handler(bot, update):
@@ -47,24 +45,44 @@ def help_handler(bot, update):
     update.message.reply_text(help_text)
 
 
-def sender_handler(bot, update):
-    pass
+def publish_handler(bot, update):
+    message = get_surah()
+    for x in db.fetch_all():
+        telegram_id = x.get('telegram_id')
+        try:
+            bot.sendMessage(chat_id=telegram_id, text=message)
+        except Exception:
+            logger.error(f'Failed send surah to {telegram_id}')
+        else:
+            logger.info(f'Send surah to {telegram_id} succeed.')
 
 
 def subscribe_handler(bot, update):
     telegram_user = update.message.from_user
     username = telegram_user.username
-    message = (f'Hi @{username},\n\n'
-               f'Akun anda telah terdaftar pada daftar langganan SaHaDa.\n\n'
-               f'Apabila anda ingin berhenti berlangganan, cukup kirimkan '
-               f'pesan /unsubscribe')
+
+    meta = {
+        'telegram_id': telegram_user.id,
+        'username': username,
+        'first_name': telegram_user.first_name,
+        'last_name': telegram_user.last_name,
+    }
+    is_success = db.insert(**meta)
+    if is_success:
+        message = (f'Hi {username},\n\n'
+                   f'Akun anda telah terdaftar pada daftar langganan SaHaDa.\n\n'
+                   f'Apabila anda ingin berhenti berlangganan, cukup kirimkan '
+                   f'pesan /unsubscribe')
+    else:
+        message = f'Hi {username},\n\nAkun anda telah didaftarkan sebelumnya.'
     update.message.reply_text(message)
 
 
 def unsubscribe_handler(bot, update):
     telegram_user = update.message.from_user
     username = telegram_user.username
-    message = (f'Hi @{username},\n\n'
+    db.delete(telegram_id=telegram_user.id)
+    message = (f'Hi {username},\n\n'
                f'Akun anda telah dihapus dari daftar langganan SaHaDa.\n\n'
                f'Kritik dan saran bisa disampaikan ke @adiyatmubarak')
     update.message.reply_text(message)
@@ -77,7 +95,11 @@ def random_handler(bot, update):
 
 def error_handler(bot, update, error):
     """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, error)
+    message = 'Update "%s" caused error "%s"', update, error
+    owner = os.getenv('OWNER_ID')
+    if owner:
+        bot.sendMessage(chat_id=owner, text=message)
+    logger.warning(message)
 
 
 def main():
@@ -91,8 +113,8 @@ def main():
     updater.dispatcher.add_error_handler(error_handler)
 
     # Register job scheduler in every 12 hours.
-    # hours12 = 60 * 60 * 12
-    # updater.job_queue.put(sender_handler, hours12, repeat=True)
+    hours12 = 60 * 60 * 12
+    updater.job_queue.run_repeating(publish_handler, hours12)
 
     # Start the Bot
     updater.start_polling()
